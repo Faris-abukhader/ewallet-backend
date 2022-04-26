@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  firstName     String?
+  secondName    String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  gender        String?
+  age           Int @default(0)
+  accounts      Account[]
+  sessions      Session[]
+  wallet        Wallet[]
+  customTransactionCatogery      CustomTransactionCatogery[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Wallet {
+  id            String    @id @default(cuid())
+  userId        String  
+  user          User @relation(fields: [userId],references: [id])
+  title         String @unique
+  amount        Float @default(0.0)
+  currency      String 
+  createdAt     DateTime @default(now())
+  lastUpdate    DateTime @updatedAt
+  transactions  Transaction[]
+  budgets       budget[]
+}
+model Transaction {
+  id            String @id @default(cuid())
+  walletId      String 
+  wallet        Wallet @relation(fields: [walletId],references: [id])
+  title         String
+  isExpenses    Boolean
+  catogery      String
+  note          String?
+  amount        Float @default(0.0)
+  currency      String
+  createdAt     DateTime @default(now())
+  lastUpdate    DateTime @updatedAt
+
+}
+
+model budget {
+  id           String @id @default(cuid())
+  walletId     String
+  wallet       Wallet @relation(fields: [walletId],references: [id])
+  name         String
+  amount       Float @default(0.0)
+  currency     String
+  catogery     String
+  recurrence   String
+  startedDate  DateTime
+  createdAt    DateTime @default(now())
+  lastUpdate   DateTime @updatedAt
+}
+
+model TransactionCatogery {
+  id           String @id @default(cuid())
+  name         String
+  isExpenses   Boolean @default(false)
+  icon         String 
+}
+
+model CustomTransactionCatogery {
+  userId       String
+  user         User @relation(fields: [userId],references: [id])
+  id           String @id @default(cuid())
+  name         String
+  isExpenses   Boolean @default(false)
+  icon         String 
+}
+ 
