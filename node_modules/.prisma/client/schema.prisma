@@ -43,7 +43,8 @@ model User {
   firstName     String?
   secondName    String?
   email         String?   @unique
-  emailVerified DateTime?
+  password      String?
+  emailVerified Boolean @default(false)
   image         String?
   gender        String?
   age           Int @default(0)
