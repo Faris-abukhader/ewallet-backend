@@ -10,6 +10,7 @@ const budget = require("./routes/budget")
 const transaction = require("./routes/transaction")
 const transactionCatogery = require("./routes/transactionCatogery")
 const customTransactionCatogery = require("./routes/customTransactionCatogery")
+const password = require('./routes/password')
 
 
 const bcrypt = require("bcrypt")
@@ -26,9 +27,11 @@ app.use('/budget',budget)
 app.use('/transaction',transaction)
 app.use('/transactionCatogery',transactionCatogery)
 app.use('/customTransactionCatogery',customTransactionCatogery)
+app.use('/password',password)
 
 
 app.get("/",async(req,res)=>{
+    res.send({message:"hello world"})
     // bcrypt.genSalt(10, function(err, salt) {
     //     bcrypt.hash('Fares_455.', salt, function(err, hash) {
     //         // Store hash in your password DB.
@@ -36,13 +39,13 @@ app.get("/",async(req,res)=>{
     //     });
     // });
 
-    const firstHashedPassword = '$2b$10$DFmeqbbYr2c6NJKC0z8c9uS4LDyWjqDYmiDg18OVhrZUbIBlvrnbS'
-    bcrypt.compare('Fares_455.', firstHashedPassword, function(err, result) {
-        if(err){
-            res.send({error:err})
-        }
-        res.send({result:result})
-    });
+    // const firstHashedPassword = '$2b$10$DFmeqbbYr2c6NJKC0z8c9uS4LDyWjqDYmiDg18OVhrZUbIBlvrnbS'
+    // bcrypt.compare('Fares_455.', firstHashedPassword, function(err, result) {
+    //     if(err){
+    //         res.send({error:err})
+    //     }
+    //     res.send({result:result})
+    // });
     
     
     // res.send({message:"hello world"})

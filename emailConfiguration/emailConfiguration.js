@@ -4,7 +4,7 @@ require('dotenv').config()
 const fs = require('fs')
 
 
-async function SendEmail(toEmails,token) {
+async function SendEmail(toEmails,message,subject,url) {
     var transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -13,17 +13,18 @@ async function SendEmail(toEmails,token) {
       }
     });
 
-    fs.readFile(__dirname+'/../public/test.html', (err, data) => {
+    fs.readFile(__dirname+'/../public/messageTemplate.html', (err, data) => {
         if (err) console.log(err);
         var template = handlerbars.compile(data.toString())
         var replacements = {
-            token:process.env.API_URL+'/user/verify/'+token
+            message:message,
+            token:url
         }
         var htmlToSend = template(replacements)
         var mailOptions = {
             from: process.env.DEFAULT_EMAIL,
             to: toEmails,
-            subject: 'Ewallet email verifying',
+            subject: subject,
             html:htmlToSend            
           };
           

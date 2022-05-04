@@ -2,20 +2,19 @@ const express = require("express")
 const router = express.Router()
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient()
-const middleWare = require('./middleware')
+const middleWare = require('../middleware/middleware.js')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const emailSender = require('../emailConfiguration/emailConfiguration')
 require('dotenv').config()
 
 
-router.use(middleWare)
+// router.use(middleWare)
 router.get('/verify/:token', async (req, res) => {
     try {
         const { token } = req.params
         var decoded = jwt.verify(token, process.env.JWT_SECRET);
         var email = decoded.token
-        console.log(email)
         const data = await prisma.user.update({
             where: {
                 email: email,
@@ -82,12 +81,14 @@ router.post('/auth', async (req, res) => {
     }
 })
 
+
+
 router.post('/', async (req, res) => {
     try {
         const { firstName, lastName, email, password } = req.body
         bcrypt.genSalt(10, async function (err, salt) {
             if (err) {
-                res.json({ err: err })
+                res.send({ err: err })
             }
             bcrypt.hash(password, salt, function (err, hashedPassword) {
                 if (!err) {
@@ -102,9 +103,13 @@ router.post('/', async (req, res) => {
                         if (response) {
                             res.json({ state: true })
                             const token = jwt.sign({ token: email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-                            emailSender(email, token)
+                            let message = 'This email send from Ewallet to verify this email registeration , for verify this email click on the link below'
+                            let subject = 'Ewallet email verifying'
+                            let url = `${process.env.API_URL}/user/verify/${token}`
+                            emailSender(email,message,subject, url)                        
+                        }else{
+                            res.send({ state: false })
                         }
-                        res.json({ state: false })
                     })
                 }
             });
