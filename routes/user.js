@@ -58,27 +58,45 @@ router.get('/:id', async (req, res) => {
 })
 
 router.post('/auth', async (req, res) => {
-    try {
-        const { email, password } = req.body
-        const data = await prisma.user.findFirst(({
+    // try {
+        const email = req.body.email
+        const password = req.body.password
+        console.log(req.body)
+        prisma.user.findFirst(({
             where: {
-                email: email,
+                email: email
+            },
+            select:{
+                email:true,
+                firstName:true,
+                secondName:true,
+                age:true,
+                password:true
             }
-        }))
-        const hashedPassword = data.password
-        bcrypt.compare(password, hashedPassword, function (err, result) {
-            if (err) {
-                res.send({ error: err })
-            }
-            if (result) {
-                res.json({ state: true })
-            } else {
-                res.json({ state: false })
-            }
-        });
-    } catch {
-        res.send({ message: "something went wrong" })
-    }
+        })).then((data)=>{
+            console.log(data)
+            const hashedPassword = data.password
+            console.log('email :'+email+' password : '+password+' hashed : '+hashedPassword )
+            bcrypt.compare(password, hashedPassword, function (err, result) {
+                if (err) {
+                    console.log("Error habibi: "+err.message)
+                    res.send({ error: err })
+                }
+                if (result) {  
+                    delete data.password
+                    console.log(`it's works`)
+                    res.send({user:data, state: true })
+                } else {
+                    console.log(`it's not works`)
+                    res.send({ state: false })
+                }
+            });    
+        }).catch(()=>{
+            res.send({ state: false })
+        })
+    // } catch {
+    //     res.send({ message: "something went wrong" })
+    // }
 })
 
 

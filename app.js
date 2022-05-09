@@ -30,14 +30,33 @@ app.use('/customTransactionCatogery',customTransactionCatogery)
 app.use('/password',password)
 
 
+app.get('/first',async(req,res)=>{
+    bcrypt.genSalt(10, function(err, salt) {
+        bcrypt.hash('Fares_455.', salt, async function(err, hash) {
+            res.send({hash:hash})
+        });
+    });
+})
+
+app.get('/second',async(req,res)=>{
+    bcrypt.genSalt(10, function(err, salt) {
+        bcrypt.hash('Fares_455.', salt, async function(err, hash) {
+            res.send({hash:hash})
+        });
+    });
+})
+
+
 app.get("/",async(req,res)=>{
-    res.send({message:"hello world"})
-    // bcrypt.genSalt(10, function(err, salt) {
-    //     bcrypt.hash('Fares_455.', salt, function(err, hash) {
-    //         // Store hash in your password DB.
-    //         res.send({hashedPassword:hash})
-    //     });
-    // });
+    // res.send({message:"hello world"})
+    let first=''
+    bcrypt.genSalt(10, function(err, salt) {
+        bcrypt.hash('Fares_455.', salt, async function(err, hash) {
+            // Store hash in your password DB.
+            first =  hash
+        });
+    });
+
 
     // const firstHashedPassword = '$2b$10$DFmeqbbYr2c6NJKC0z8c9uS4LDyWjqDYmiDg18OVhrZUbIBlvrnbS'
     // bcrypt.compare('Fares_455.', firstHashedPassword, function(err, result) {
