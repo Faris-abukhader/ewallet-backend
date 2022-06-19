@@ -2,24 +2,23 @@ const express = require("express")
 const router = express.Router()
 const {PrismaClient} = require('@prisma/client');
 const prisma = new PrismaClient()
-const middleWare = require('./middleware')
+const middleWare = require('../middleware/middleware')
 
-
-router.use(middleWare)
-
-router.get('/',async(req,res)=>{
+router.get('/',middleWare,async(req,res)=>{
     try{
-    const data = await prisma.customTransactionCatogery.findMany({})
-    res.json(data)
+        const{token} = req.headers
+        const result = await prisma.$queryRaw`select id , title ,icon ,type from customTransactionCategory WHERE userId = ${token} UNION select id , title ,icon ,type from transactionCategory`;
+        res.json(result)
+    
     }catch{
         res.send({message:'something went wrong'})
     }
 })
 
-router.get('/:id',async(req,res)=>{
+router.get('/:id',middleWare,async(req,res)=>{
     try{
         const {id} = req.params
-        const data = await prisma.customTransactionCatogery.findUnique({
+        const data = await prisma.customTransactionCategory.findUnique({
             where:{
               id:id
             }
@@ -30,14 +29,14 @@ router.get('/:id',async(req,res)=>{
     }
 })
 
-router.post('/',async(req,res)=>{
+router.post('/',middleWare,async(req,res)=>{
     try{
-        const {userId,name,isExpenses,icon} = req.body
-        const data = await prisma.customTransactionCatogery.create({
+        const {userId,title,type,icon} = req.body
+        const data = await prisma.customTransactionCategory.create({
             data:{
                 userId:userId,
-                name:name,
-                isExpenses:isExpenses,
+                title:title,
+                type:type,
                 icon:icon
             }
         })
@@ -47,11 +46,11 @@ router.post('/',async(req,res)=>{
     }
 })
 
-router.put('/:id',async(req,res)=>{
+router.put('/:id',middleWare,async(req,res)=>{
     try{
         const {id} = req.params
         const {name,isExpenses,icon} = req.body
-        const data = await prisma.customTransactionCatogery.update({
+        const data = await prisma.customTransactionCategory.update({
             where:{
                id:id
             },
@@ -67,19 +66,19 @@ router.put('/:id',async(req,res)=>{
     }
 })
 
-router.delete('/',async(req,res)=>{
+router.delete('/',middleWare,async(req,res)=>{
     try{
-        const data = await prisma.customTransactionCatogery.deleteMany({})
+        const data = await prisma.customTransactionCategory.deleteMany({})
         res.json(data)
     }catch{
         res.send({message:'something went wrong'})
     }
 })
 
-router.delete('/:id',async(req,res)=>{
+router.delete('/:id',middleWare,async(req,res)=>{
     try{
         const {id} = req.params
-        const data = await prisma.customTransactionCatogery.delete({
+        const data = await prisma.customTransactionCategory.delete({
             where:{
                 id:id
             }
@@ -92,11 +91,3 @@ router.delete('/:id',async(req,res)=>{
 
 
 module.exports = router
-
-/**
- *   id           String @id @default(cuid())
-  name         String
-  isExpenses   Boolean @default(false)
-  icon         String 
-
- */

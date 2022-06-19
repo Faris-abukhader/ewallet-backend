@@ -1,117 +1,147 @@
 const express = require("express")
 const router = express.Router()
-const {PrismaClient} = require('@prisma/client');
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient()
-const middleWare = require('./middleware')
+const middleWare = require('../middleware/middleware')
+const adminMiddleWare = require('../middleware/adminMiddleware')
 
+router.get('/betweenDates/:fromDate?/:toDate?', middleWare, async (req, res) => {
+    try {
+        var { fromDate, toDate } = req.params
+        const userId = req.headers.token
+        var where;
 
-router.use(middleWare)
-
-router.get('/',async(req,res)=>{
-    try{
-        const data = await prisma.transaction.findMany({})
-        res.json(data)
-    }catch{
-        res.send({message:"something went wrong"})
-    }
-})
-
-router.get('/:id',async(req,res)=>{
-    try{
-    const {id} = req.params
-    const data = await prisma.transaction.findUnique(({
-        where:{
-            id:id
+        if (fromDate == undefined || toDate == undefined) {
+            where = { userId }
+        } else {
+            if (fromDate.length > 2 && toDate.length > 2) {
+                fromDate = new Date(fromDate)
+                toDate = new Date(toDate)
+                where = {
+                    userId,
+                    date: {
+                        lte: toDate,
+                        gte: fromDate
+                    }
+                }
+            } else {
+                where = { userId }
+            }
         }
-    }))
-    res.json(data)
-    }catch{
-        res.send({message:"something went wrong"})
+
+        const data = await prisma.transaction.findMany({
+            where,
+            include: {
+                transactionCategory: true
+            }
+        })
+        res.json({ state: true, data: data })
+    } catch {
+        res.send({ state: false, message: "something went wrong" })
     }
 })
 
-router.post('/',async(req,res)=>{
-    try{
-        const {walletId,isExpenses,catogery,date,label,note,amount,currency} = req.body
-        const data = await prisma.transaction.create({
-            data:{
-                walletId:walletId,
-                isExpenses:isExpenses,
-                catogery:catogery,
-                date:date,
-                label:label,
-                note:note,
-                amount:amount,
-                currency:currency,
+router.get('/', middleWare, async (req, res) => {
+    try {
+        const userId = req.headers.token
+        const data = await prisma.transaction.findMany({
+            where: {
+                userId
             }
         })
         res.json(data)
-
-    }catch{
-        res.send({message:"something went wrong"})
+    } catch {
+        res.send({ message: "something went wrong" })
     }
 })
 
-router.put('/:id',async(req,res)=>{
-    try{
-        const {id} = req.params
-        const {isExpenses,catogery,date,label,note,amount,currency} = req.body
+router.get('/:id', middleWare, async (req, res) => {
+    try {
+        const { id } = req.params
+        const data = await prisma.transaction.findUnique(({
+            where: {
+                id: id
+            }
+        }))
+        res.json(data)
+    } catch {
+        res.send({ message: "something went wrong" })
+    }
+})
+
+router.post('/', middleWare, async (req, res) => {
+    try {
+        const { id, type, categoryId, budgetId, icon, title, date, note, amount } = req.body
+        var transaction;
+        transaction = {
+            userId: id,
+            type: type,
+            catogery: categoryId,
+            budgetId: budgetId,
+            title: title,
+            note: note,
+            icon: icon,
+            date: date,
+            amount: amount,
+        }
+        budgetId.length > 1 ? true : delete transaction.budgetId
+
+        const data = await prisma.transaction.create({ data: transaction })
+        res.send({ state: true, data: data })
+
+    } catch {
+        res.send({ state: false, message: "something went wrong" })
+    }
+})
+
+router.put('/:id', middleWare, async (req, res) => {
+    try {
+        const { id } = req.params
+        const { type, categoryId, date, title, icon, note, amount } = req.body
         const data = await prisma.transaction.update({
-            where:{
-                id:id
+            where: {
+                id: id
             },
-            data:{
-                isExpenses:isExpenses,
-                catogery:catogery,
-                date:date,
-                label:label,
-                note:note,
-                amount:amount,
-                currency:currency,
+            data: {
+                type: type,
+                catogery: categoryId,
+                title: title,
+                note: note,
+                icon: icon,
+                date: date,
+                amount: amount,
+                lastUpdate: new Date()
             }
         })
-        res.json(data)
-    }catch{
-        res.send({message:"something went wrong"})
+        res.json({ state: true, data: data })
+    } catch {
+        res.send({ state: false, message: "something went wrong" })
     }
 })
 
-router.delete('/',async(req,res)=>{
-    try{
+router.delete('/', adminMiddleWare, async (req, res) => {
+    try {
         const data = await prisma.transaction.deleteMany({})
         res.json(data)
-    }catch{
-        res.send({message:"something went wrong"})  
+    } catch {
+        res.send({ message: "something went wrong" })
     }
 })
 
-router.delete('/:id',async(req,res)=>{
-    try{
-        const {id} = req.params
+router.delete('/:id', middleWare, async (req, res) => {
+    try {
+        const { id } = req.params
+        const { userId } = req.body
         const data = await prisma.transaction.delete({
-            where:{
-                id:id
+            where: {
+                userId: userId,
+                id: id
             }
         })
         res.json(data)
-    }catch{
-        res.send({message:"something went wrong"})  
+    } catch {
+        res.send({ message: "something went wrong" })
     }
 })
 
 module.exports = router
-
-/**
-  id            String @id @default(cuid())
-  walletId      String 
-  wallet        Wallet @relation(fields: [walletId],references: [id])
-  title         String
-  isExpenses    Boolean
-  catogery      String
-  note          String?
-  amount        Float @default(0.0)
-  currency      String
-  createdAt     DateTime @default(now())
-  lastUpdate    DateTime @updatedAt
-
- */

@@ -1,15 +1,21 @@
-const jwt = require("jsonwebtoken")
-module.exports = (req,res,next)=>{
-    const token = req.params.token;
-    if(!token){
-        return res.status(401).send({ok:false,message:"access denied . No token provided"})
-    }
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient()
+module.exports = async (req, res, next) => {
+    try {
+        const token = req.headers.token
+        const user = await prisma.user.findFirst({
+            where: {
+                id: token
+            }
+        }).then((response) => {
+            if (response) {
+                next()
+            } else {
+                return res.send({ state: false, 'message': 'Token is not authorized.' })
+            }
+        }).catch(() => res.send({ state: false, 'message': 'Token is not authorized.' }))
 
-    try{
-        const deccoded = jwt.verify(token,process.env.JWT_TOKEN);
-    }catch{
-        return res.status(401).send({ok:false,message:"Token expired"})
+    } catch {
+        return res.send({ state: false, 'message': 'No token found.' })
     }
-
-    next();
 }

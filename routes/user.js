@@ -3,11 +3,38 @@ const router = express.Router()
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient()
 const middleWare = require('../middleware/middleware.js')
+const adminMiddleWare = require('../middleware/adminMiddleware.js')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const emailSender = require('../emailConfiguration/emailConfiguration')
 require('dotenv').config()
 
+
+// need to craete user for test
+// for frontend
+router.get('/createUser', async (req, res) => {
+    bcrypt.genSalt(10, async function (err, salt) {
+        if (err) {
+            res.send({ err: err })
+        }
+
+        bcrypt.hash('12345', salt, function (err, hashedPassword) {
+            if (!err) {
+                const data = prisma.user.create({
+                    data: {
+                        firstName: 'fares',
+                        secondName: 'raed',
+                        email: 'faresfares@yahoo.com',
+                        password: hashedPassword,
+                        emailVerified: true
+                    }
+                }).then((response) => {
+                    res.json({ state: true, data: response })
+                }).catch(() => res.json({ state: false, message: "something went wrong" }))
+            }
+        });
+    });
+})
 
 // router.use(middleWare)
 router.get('/verify/:token', async (req, res) => {
@@ -29,7 +56,7 @@ router.get('/verify/:token', async (req, res) => {
     }
 })
 
-router.get('/', async (req, res) => {
+router.get('/', adminMiddleWare, async (req, res) => {
     try {
         const data = await prisma.user.findMany({})
         res.json(data)
@@ -38,65 +65,119 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id/:fromDate?/:toDate?', async (req, res) => {
     try {
         const { id } = req.params
-        const data = await prisma.user.findUnique(({
-            where: {
-                id: id
-            },
-            include: {
-                customTransactionCatogery: true,
-                wallet: true
-            }
+        var { fromDate, toDate } = req.params
+        var include;
 
+        if (fromDate == undefined || toDate == undefined) {
+            include = {
+                transactions: {
+                    include: {
+                        transactionCategory: true,
+                    }
+                },
+                customTransactionCategory: true,
+                budgets: {
+                    include: {
+                        categories: true,
+                        transactions: true
+                    }
+                }
+            }
+        } else {
+            if (fromDate.length > 2 && toDate.length > 2) {
+                fromDate = new Date(fromDate)
+                toDate = new Date(toDate)
+                include = {
+                    transactions: {
+                        where: {
+                            date: {
+                                lte: toDate,
+                                gte: fromDate
+                            }
+                        },
+                        include: {
+                            transactionCategory: true,
+                        }
+                    },
+                    customTransactionCategory: true,
+                    budgets: {
+                        include: {
+                            categories: true,
+                            transactions: true
+                        }
+                    }
+                }
+            } else {
+                include = {
+                    transactions: {
+                        include: {
+                            transactionCategory: true,
+                        }
+                    },
+                    customTransactionCategory: true,
+                    budgets: {
+                        include: {
+                            categories: true,
+                            transactions: true
+                        }
+                    }
+                }
+            }
+        }
+
+        let data = await prisma.user.findUnique(({
+            where: {
+                id: id,
+            },
+            include
         }))
-        res.json(data)
+
+        let transactionCategory = await prisma.transactionCategory.findMany({})
+        data.transactionCategories = transactionCategory
+        res.json({ state: true, data: data })
     } catch {
-        res.send({ message: "something went wrong" })
+        res.send({ state: false, message: "something went wrong" })
     }
 })
 
 router.post('/auth', async (req, res) => {
-    // try {
+    try {
         const email = req.body.email
         const password = req.body.password
-        console.log(req.body)
         prisma.user.findFirst(({
             where: {
                 email: email
             },
-            select:{
-                email:true,
-                firstName:true,
-                secondName:true,
-                age:true,
-                password:true
+            select: {
+                email: true,
+                firstName: true,
+                secondName: true,
+                age: true,
+                password: true,
+                id: true
             }
-        })).then((data)=>{
-            console.log(data)
+        })).then((data) => {
             const hashedPassword = data.password
-            console.log('email :'+email+' password : '+password+' hashed : '+hashedPassword )
             bcrypt.compare(password, hashedPassword, function (err, result) {
                 if (err) {
-                    console.log("Error habibi: "+err.message)
                     res.send({ error: err })
                 }
-                if (result) {  
+                if (result) {
                     delete data.password
-                    console.log(`it's works`)
-                    res.send({user:data, state: true })
+                    res.send({ user: data, state: true })
                 } else {
-                    console.log(`it's not works`)
                     res.send({ state: false })
                 }
-            });    
-        }).catch(()=>{
+            });
+        }).catch(() => {
             res.send({ state: false })
         })
-    // } catch {
-    //     res.send({ message: "something went wrong" })
-    // }
+    } catch {
+        res.send({ message: "something went wrong" })
+    }
 })
 
 
@@ -124,8 +205,8 @@ router.post('/', async (req, res) => {
                             let message = 'This email send from Ewallet to verify this email registeration , for verify this email click on the link below'
                             let subject = 'Ewallet email verifying'
                             let url = `${process.env.API_URL}/user/verify/${token}`
-                            emailSender(email,message,subject, url)                        
-                        }else{
+                            emailSender(email, message, subject, url)
+                        } else {
                             res.send({ state: false })
                         }
                     })
@@ -137,7 +218,7 @@ router.post('/', async (req, res) => {
     }
 })
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', middleWare, async (req, res) => {
     try {
         const { id } = req.params
         const { firstName, lastName, age, gender } = req.body
@@ -158,7 +239,7 @@ router.put('/:id', async (req, res) => {
     }
 })
 
-router.delete('/', async (req, res) => {
+router.delete('/', adminMiddleWare, async (req, res) => {
     try {
         const data = await prisma.user.deleteMany({})
         res.json(data)
@@ -167,7 +248,7 @@ router.delete('/', async (req, res) => {
     }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', middleWare, async (req, res) => {
     try {
         const { id } = req.params
         const data = await prisma.user.delete({
