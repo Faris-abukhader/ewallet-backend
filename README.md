@@ -23,18 +23,12 @@
 ## <img src="https://cdn-icons-png.flaticon.com/512/1436/1436664.png" width="25" height="25" style="padding-right:15px">  Introduction 
 
 <p>
-WeWork is an open source freelancing platform , where is consist of two parts , first part is Backend which you are reading now and the other part is Frontend . In this part we gonna design our DB and create secure connection (using JWT) through our API to frontend , where users , request , jobs info all gonna be saved.
+Manage all your money with ease from one place with Ewallet. Track your income and expenses, analyze your financial habits and stick to your budgets.
 <br/>
 This API gonna cover the authentication part , which includes SignIn, JWT , SignUp , email verification.
 <br/>
-In this API under user we have two accounts type , first is freelancer second is employer .
+User can create transations with two types expenses and income , also can create budgets for fixed time , for specific cateogries or all categories.
 </br>
-Employers can publish there own jobs , then freelancer can provides there proposals , employers can accept or decline the proposals , once proposal is accepted one recruiting request gonna be send to freelancer , if both side accept the request the job goona be closed ; also the employer can send request to specific freelancer direclty without waiting for proposal.
-</br>
-Employer can rate freelancer for each job , and from here freelancer gonna get his average rate.
-WeWork API also provide Conversation route where users can be in touch through messages between them.
-</br>
-
 </p>
 
 
@@ -123,86 +117,31 @@ npm run dev
 ## <img src="https://cdn-icons-png.flaticon.com/512/535/535471.png" width="25" height="25" style="padding-right:15px">  Project structure  
 
 ```
-📦WeWork-backend
- ┣ 📂auth
- ┃ ┣ 📜authController.js
- ┃ ┣ 📜authRoute.js
- ┃ ┗ 📜authSchema.js
- ┣ 📂certification
- ┃ ┣ 📜certificationController.js
- ┃ ┣ 📜certificationRoute.js
- ┃ ┗ 📜certificationSchema.js
- ┣ 📂conversation
- ┃ ┣ 📜conversationController.js
- ┃ ┣ 📜conversationRoute.js
- ┃ ┗ 📜conversationSchema.js
- ┣ 📂education
- ┃ ┣ 📜educationController.js
- ┃ ┣ 📜educationRoute.js
- ┃ ┗ 📜educationSchema.js
- ┣ 📂employer
- ┃ ┣ 📜employerController.js
- ┃ ┣ 📜employerRoute.js
- ┃ ┗ 📜employerSchema.js
- ┣ 📂employmentHistory
- ┃ ┣ 📜employmentHistoryController.js
- ┃ ┣ 📜employmentHistoryRoute.js
- ┃ ┗ 📜employmentHistorySchema.js
- ┣ 📂freelancer
- ┃ ┣ 📜freelancerController.js
- ┃ ┣ 📜freelancerRoute.js
- ┃ ┗ 📜freelancerSchema.js
- ┣ 📂hiringRequest
- ┃ ┣ 📜hiringRequestController.js
- ┃ ┣ 📜hiringRequestRoute.js
- ┃ ┗ 📜hiringRequestSchema.js
- ┣ 📂job
- ┃ ┣ 📜jobController.js
- ┃ ┣ 📜jobRoute.js
- ┃ ┗ 📜jobSchema.js
- ┣ 📂language
- ┃ ┣ 📜languageController.js
- ┃ ┣ 📜languageRoute.js
- ┃ ┗ 📜languageSchema.js
- ┣ 📂message
- ┃ ┣ 📜messageController.js
- ┃ ┣ 📜messageRoute.js
- ┃ ┗ 📜messageSchema.js
-  ┣ 📂preValidation
- ┃ ┣ 📜employerMiddleware.js
- ┃ ┣ 📜freelancerMiddleware.js
- ┃ ┗ 📜websiteMiddleware.js
+📦ewallet-backend-main
+ ┣ 📂emailConfiguration
+ ┃ ┗ 📜emailConfiguration.js
+ ┣ 📂middleware
+ ┃ ┣ 📜adminMiddleware.js
+ ┃ ┗ 📜middleware.js
  ┣ 📂prisma
- ┃ ┣ 📂migrations
- ┃ ┃ ┣ 📂20220928063002_init
- ┃ ┃ ┃ ┗ 📜migration.sql
- ┃ ┃ ┗ 📜migration_lock.toml
- ┃ ┗ 📜schema.prisma
- ┣ 📂product
- ┃ ┣ 📜productController.js
- ┃ ┣ 📜productRoute.js
- ┃ ┗ 📜productSchema.js
- ┣ 📂proposal
- ┃ ┣ 📜proposalController.js
- ┃ ┣ 📜proposalRoute.js
- ┃ ┗ 📜proposalSchema.js
- ┣ 📂util
- ┃ ┣ 📂emailConfig
- ┃ ┃ ┣ 📂templates
- ┃ ┃ ┃ ┣ 📜.DS_Store
- ┃ ┃ ┃ ┣ 📜resetPassword.html
- ┃ ┃ ┃ ┗ 📜verify.html
- ┃ ┃ ┣ 📜emailConfig.js
- ┃ ┃ ┣ 📜script.js
- ┃ ┃ ┗ 📜sendInBlue.js
- ┃ ┣ 📜docGenerator.js
- ┃ ┣ 📜paginationRange.js
- ┃ ┗ 📜schemaContainer.js
+ ┃ ┣ 📂prisma
+ ┃ ┃ ┗ 📜schema.prisma
+ ┃ ┗ 📜.gitignore
+ ┣ 📂public
+ ┃ ┗ 📜messageTemplate.html
+ ┣ 📂routes
+ ┃ ┣ 📜budget.js
+ ┃ ┣ 📜customTransactionCatogery.js
+ ┃ ┣ 📜password.js
+ ┃ ┣ 📜transaction.js
+ ┃ ┣ 📜transactionCatogery.js
+ ┃ ┗ 📜user.js
  ┣ 📜.gitignore
+ ┣ 📜README.md
  ┣ 📜app.js
- ┣ 📜package-lock.json
+ ┣ 📜ewallet diagram.png
  ┗ 📜package.json
-```
+ ```
 
 
 ## <img src="https://cdn-icons-png.flaticon.com/512/535/535471.png" width="25" height="25" style="padding-right:15px">  Features  
@@ -214,27 +153,28 @@ http://localhost:4500/doc
 - Authentications , authorizations are all implemented with differents layers , check Prevalidation folder .
 - Credentials is all well encoded before it saves to DB.
 - Custom implementation of verify account by email 
-- Realtime messaging using Socket.IO (coming soon) 
 
 
 
 ## 📦 Packages
 
-
 | Name | Description |
 | --- | --- |
-| [`@fastify/cors`](https://github.com/fastify/fastify-cors) | Fastify CORS |
-| [`@fastify/static`](https://github.com/fastify/fastify-static) | Plugin for serving static files as fast as possible |
-| [`@fastify/swagger`](https://github.com/fastify/fastify-swagger) | Swagger-compliant APIs entirely in Node.js |
 | [`@prisma/client`](https://github.com/prisma/prisma) | Next-generation ORM for Node.js & TypeScript | PostgreSQL, MySQL server |
 | [`prisma`](https://github.com/prisma/prisma) | Next-generation ORM for Node.js & TypeScript | PostgreSQL, MySQL server |
 | [`bcrypt`](https://www.npmjs.com/package/bcrypt) | A library to help you hash passwords |
-| [`fastify`](https://github.com/fastify/fastify) | Fast and low overhead web framework, for Node.js |
 | [`handlebars`](https://www.npmjs.com/package/handlebars) | A Handlebars view engine for Express which doesn't suck |
 | [`jsonwebtoken`](https://www.npmjs.com/package/jsonwebtoken) | JSON Web Token implementation (symmetric and asymmetric) |
 | [`nodemailer`](https://github.com/nodemailer/nodemailer) | Easy as cake e-mail sending from your Node.js applications |
 | [`nodemon`](https://github.com/remy/nodemon) | Simple monitor script for use during development of a Node.js app |
-| [`sib-api-v3-sdk`](https://www.npmjs.com/package/sib-api-v3-sdk) | SendinBlue's API v3 Node.js Library |
+| [`body-parser`](https://www.npmjs.com/package/body-parser) | Node.js body parsing middleware.|
+| [`cors`](https://www.npmjs.com/package/cors) | CORS is a node.js package for providing a Connect/Express middleware that can be used to enable CORS with various options.|
+| [`bcrypt`](https://www.npmjs.com/package/bcrypt) | A library to help you hash passwords.|
+| [`dotenv`](https://www.npmjs.com/package/dotenv) | Dotenv is a zero-dependency module that loads environment variables from a .env file into process.env.|
+| [`express`](https://www.npmjs.com/package/express) | Fast, unopinionated, minimalist web framework for Node.js.|
+| [`swagger-jsdoc`](https://www.npmjs.com/package/swagger-jsdoc) | This library reads your JSDoc-annotated source code and generates an OpenAPI (Swagger) specification.|
+| [`swagger-ui-express`](https://www.npmjs.com/package/swagger-ui-express) | This module allows you to serve auto-generated swagger-ui generated API docs from express, based on a swagger.json file.|
+
 
 
 ## 📜 License
